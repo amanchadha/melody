@@ -1,2 +1,2 @@
-# music-player
+# melody
 Python | TkInter | PyGame
