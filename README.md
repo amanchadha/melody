@@ -1,4 +1,4 @@
-# Melody v1.0
+# Melody
 Python | TkInter | PyGame | Threading
 
 Developed by: Aman Chadha
