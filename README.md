@@ -1,4 +1,7 @@
-# Melody ![alt text](https://github.com/amanchadha/melody/blob/master/assets/melody.png)
+# Melody 
+
+![alt text](https://github.com/amanchadha/melody/blob/master/assets/melody.png)
+
 Python | TkInter | PyGame | Threading
 
 Developed by: Aman Chadha
