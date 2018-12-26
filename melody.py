@@ -61,7 +61,8 @@ def browseFile(playListBox):
     if len(pathToFile): #pathToFile is not blank (i.e., the user did not cancel the open dialog box)
         addToPlaylist(playListBox, pathToFile)
         mixer.music.queue(pathToFile)
-        return pathToFile
+
+    return pathToFile
 
 def addToPlaylist(playListBox, pathToFile):
     """ Add the music file to the playlist. """
@@ -75,8 +76,6 @@ def addToPlaylist(playListBox, pathToFile):
     # playList - contains the full path + filename
     playList.insert(index, pathToFile)
 
-    index += 1
-
 def removeSong(playListBox):
     """ Delete the music file from the playlist. """
 
@@ -88,10 +87,7 @@ def showDetails(playSong):
     """ Delete the music file from the playlist. """
 
     # get the extension of the file
-    try:
-        totalLength = MP3(playSong).info.length if os.path.splitext(playSong)[1] == '.mp3' else mixer.Sound(playSong).get_length()
-    except:
-        import pdb; pdb.set_trace()
+    totalLength = MP3(playSong).info.length if os.path.splitext(playSong)[1] == '.mp3' else mixer.Sound(playSong).get_length()
 
     # div - total_length/60, mod - total_length % 60
     mins, secs = divmod(totalLength, 60)
@@ -108,7 +104,7 @@ def startCount(totalLength):
     global paused
     currentTime = totalLength
 
-    # mixer.music.get_busy(): returns False when the music isn't playing
+    # mixer.music.get_busy() returns False when the music isn't playing
     while mixer.music.get_busy():
         if paused:
             continue
@@ -117,11 +113,11 @@ def startCount(totalLength):
             mins = round(mins)
             secs = round(secs)
             timeformat = '{:02d}:{:02d}'.format(mins, secs)
-            currentTimeLabel['text'] = "Current Time" + ' - ' + timeformat
+            currentTimeLabel['text'] = "Time Remaining" + ' - ' + timeformat
             time.sleep(1)
             currentTime -= 1
 
-def playMusic(playList, playListBox, useFirstPlayListItem=False):
+def playMusic(playList, playListBox, chosenPlayListItem=False):
     """ This function goes three ways:
         1. Resume music if paused
         2. If a music file is loaded in the playlist (and selected), it will start playing
@@ -135,8 +131,8 @@ def playMusic(playList, playListBox, useFirstPlayListItem=False):
         paused = FALSE
     elif len(playList):
         stopMusic()
-        #time.sleep(1)
-        selectedSong = int(playListBox.curselection()[0]) if useFirstPlayListItem is False else 0
+        time.sleep(1)
+        selectedSong = int(playListBox.curselection()[0]) if chosenPlayListItem is False else chosenPlayListItem
         songToBePlayed = playList[selectedSong]
         mixer.music.load(songToBePlayed)
         try:
@@ -147,7 +143,7 @@ def playMusic(playList, playListBox, useFirstPlayListItem=False):
         showDetails(songToBePlayed)
     else:
         if len(browseFile(playListBox)): # check if return value is not blank (i.e., the user did not cancel the open dialog box)
-            playMusic(playList, playListBox, useFirstPlayListItem=True)
+            playMusic(playList, playListBox, chosenPlayListItem=0)
 
 def stopMusic():
     mixer.music.stop()
@@ -160,8 +156,12 @@ def pauseMusic():
     statusbar['text'] = "Music paused"
 
 def rewindMusic(playList, playListBox):
-    playMusic(playList, playListBox)
-    statusbar['text'] = "Replaying music"
+    print(0 if len(playList) == 1 else (int(playListBox.curselection()[0])-1))
+    playMusic(playList, playListBox, int(playListBox.curselection()[0])-1 if (int(playListBox.curselection()[0])-1) >= 0 else 0)
+
+def forwardMusic(playList, playListBox):
+    print(0 if len(playList) == 1 else ((int(playListBox.curselection()[0])+1) % len(playList)))
+    playMusic(playList, playListBox, (int(playListBox.curselection()[0])+1) % len(playList))
 
 def setVolume(volumeLevel):
     # mixer.music.set_volume() takes a float value belonging to [0, 1]
@@ -198,7 +198,7 @@ if __name__ == "__main__":
     # right frame   - top frame, middle frame and bottom frame
 
     # setup the status bar
-    statusbar = ttk.Label(root, text="Welcome to Melody v1.0", relief=SUNKEN, anchor=W, font='Helvetica 10')
+    statusbar = ttk.Label(root, text="Welcome to Melody v1.0 | www.amanchadha.com", relief=SUNKEN, anchor=W, font='Helvetica 10')
     statusbar.pack(side=BOTTOM, fill=X)
 
     # setup the menubar
@@ -254,7 +254,7 @@ if __name__ == "__main__":
     lengthLabel = ttk.Label(topFrame, text='Total Length: --:--')
     lengthLabel.pack(pady=10)
 
-    currentTimeLabel = ttk.Label(topFrame, text='Current Time: --:--')
+    currentTimeLabel = ttk.Label(topFrame, text='Time Remaining: --:--')
     currentTimeLabel.pack()
 
     # middle frame for play, stop, pause buttons
@@ -282,13 +282,13 @@ if __name__ == "__main__":
     bottomFrame.pack(padx=30)
 
     # rewind button
-    forwardPhoto = PhotoImage(file=r'assets/forward.png')
-    rewindBtn = ttk.Button(bottomFrame, image=forwardPhoto, command=lambda: rewindMusic(playList, playListBox))
-    rewindBtn.grid(row=0, column=0, ipady=3, ipadx=3)
-
-    # rewind button
     rewindPhoto = PhotoImage(file=r'assets/rewind.png')
     rewindBtn = ttk.Button(bottomFrame, image=rewindPhoto, command=lambda: rewindMusic(playList, playListBox))
+    rewindBtn.grid(row=0, column=0, ipady=3, ipadx=3)
+
+    # forward button
+    forwardPhoto = PhotoImage(file=r'assets/forward.png')
+    rewindBtn = ttk.Button(bottomFrame, image=forwardPhoto, command=lambda: forwardMusic(playList, playListBox))
     rewindBtn.grid(row=0, column=1, ipady=3, ipadx=3)
 
     # mute/unmute button
@@ -301,7 +301,7 @@ if __name__ == "__main__":
     scale = ttk.Scale(bottomFrame, from_=0, to=100, orient=HORIZONTAL, command=setVolume)
     scale.set(DEFAULT_VOLUME)  # implement the default value of scale when music player starts
     mixer.music.set_volume(DEFAULT_VOLUME/10)
-    scale.grid(row=0, column=3, pady=15, padx=15, ipady=3, ipadx=30)
+    scale.grid(row=0, column=3, pady=15, padx=15, ipady=3, ipadx=3)
 
     # custom event handler upon exiting Melody
     root.protocol("WM_DELETE_WINDOW", exitWindow)
