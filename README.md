@@ -4,6 +4,8 @@
 
 Python | TkInter | PyGame | Threading
 
+A music player built using Python Tkinter.
+
 Developed by: Aman Chadha
 
 Developed and tested on Python 3
