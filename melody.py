@@ -206,15 +206,16 @@ if __name__ == "__main__":
     root.config(menu=menubar)
 
     # create the File submenu
-    subMenu = Menu(menubar, tearoff=0)
-    menubar.add_cascade(label="File", menu=subMenu)
-    subMenu.add_command(label="Open", command=browseFile)
-    subMenu.add_command(label="Exit", command=exitWindow)
+    fileMenu = Menu(menubar, tearoff=0)
+    fileMenu.add_command(label="Open", command=browseFile)
+    fileMenu.add_separator()
+    fileMenu.add_command(label="Exit", command=exitWindow)
+    menubar.add_cascade(label="File", menu=fileMenu)
 
     # create the Help submenu
-    subMenu = Menu(menubar, tearoff=0)
-    menubar.add_cascade(label="Help", menu=subMenu)
-    subMenu.add_command(label="About Us", command=aboutMelody)
+    helpMenu = Menu(menubar, tearoff=0)
+    helpMenu.add_command(label="About Us", command=aboutMelody)
+    menubar.add_cascade(label="Help", menu=helpMenu)
 
     # set window title and icon
     root.title("Melody")
